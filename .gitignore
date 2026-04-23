@@ -1,0 +1,15 @@
+node_modules/
+lib/
+.env
+.env.*
+!.env.example
+*.log
+firebase-debug.log
+firebase-debug.*.log
+.firebase/
+.firebaserc
+
+# Credentials files
+google-credentials.json
+service-account.json
+firebase-adminsdk.json
