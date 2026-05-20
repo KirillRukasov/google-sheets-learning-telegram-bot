@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import * as path from "path";
+import * as fs from "fs";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -21,15 +22,10 @@ export class GoogleSheetsService {
       scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
     };
     
-    // If running in local emulator or directly, attempt to use local credentials file
-    const isLocal = process.env.FUNCTIONS_EMULATOR === "true" || !process.env.GCLOUD_PROJECT;
-    if (isLocal) {
-        // Adjust path depending on how it's executed (lib vs src)
-        try {
-            authOptions.keyFile = path.resolve(process.cwd(), "google-credentials.json");
-        } catch (e) {
-            console.warn("No google-credentials.json found locally. Please ensure it exists for local dev.");
-        }
+    // Check if the user placed a custom json credentials file in the root
+    const keyFilePath = path.resolve(process.cwd(), "google-credentials.json");
+    if (fs.existsSync(keyFilePath)) {
+        authOptions.keyFile = keyFilePath;
     }
 
     this.auth = new google.auth.GoogleAuth(authOptions);

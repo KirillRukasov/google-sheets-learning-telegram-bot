@@ -41,6 +41,13 @@ export class FirestoreService {
         await batch.commit();
     }
     
+    // Save unique topics to global config
+    const uniqueTopics = Array.from(new Set(words.map(w => w.topic)));
+    await this.db.collection("global").doc("config").set({
+        topics: uniqueTopics,
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
     console.log(`Successfully synced ${words.length} words to Firestore.`);
   }
 

@@ -2,13 +2,21 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { GoogleSheetsService } from "./services/googleSheetsService";
 import { FirestoreService } from "./services/firestoreService";
+import { bot } from "./bot/bot";
 
 admin.initializeApp();
 
 // Export the telegram bot webhook handler
 export const botWebhook = functions.https.onRequest(async (request, response) => {
-  // We will pass the request to the Telegraf bot instance later
-  response.status(200).send("Bot Webhook is running");
+  try {
+     // Telegraf needs to handle the HTTP requests
+     await bot.handleUpdate(request.body, response);
+  } catch (e: any) {
+     console.error("Webhook processing error:", e);
+     if (!response.headersSent) {
+        response.status(500).send("Server Error");
+     }
+  }
 });
 
 // Export the scheduled function for daily sync from Google Sheets
