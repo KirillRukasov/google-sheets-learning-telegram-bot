@@ -76,7 +76,8 @@ export const sendNextFlashcard = async (ctx: Context, editMessage = false) => {
 
     const text = `📇 **Карточка**\nТема: ${topic}\n\n${langFlag} **${sourceWord}**`;
     const keyboard = Markup.inlineKeyboard([
-        Markup.button.callback("👀 Показать перевод", "flashcard_show_translation")
+        [Markup.button.callback("👀 Показать перевод", "flashcard_show_translation")],
+        [Markup.button.callback("🛑 Закончить", "flashcard_stop")]
     ]);
 
     if (editMessage) {
@@ -88,6 +89,10 @@ export const sendNextFlashcard = async (ctx: Context, editMessage = false) => {
 
 export const showFlashcardTranslationAction = async (ctx: Context) => {
     if (!ctx.from) return;
+    
+    // Immediate acknowledgement and double-click prevention
+    try { await ctx.answerCbQuery(); } catch(e){}
+    try { await ctx.editMessageReplyMarkup(undefined); } catch(e){}
     
     const tgId = ctx.from.id.toString();
     const db = admin.firestore();
@@ -136,7 +141,6 @@ export const showFlashcardTranslationAction = async (ctx: Context) => {
         ])
     });
 
-    try { await ctx.answerCbQuery(); } catch(e){}
 };
 
 export const handleFlashcardRememberAction = async (ctx: Context) => {
@@ -144,6 +148,9 @@ export const handleFlashcardRememberAction = async (ctx: Context) => {
     
     // Quick acknowledge to prevent button loading state timeout
     try { await ctx.answerCbQuery(); } catch(e){}
+
+    // Immediately remove the inline keyboard to prevent double clicks while processing
+    try { await ctx.editMessageReplyMarkup(undefined); } catch(e){}
 
     const tgId = ctx.from.id.toString();
     const db = admin.firestore();
@@ -191,6 +198,10 @@ export const handleFlashcardRememberAction = async (ctx: Context) => {
 
 export const stopFlashcardsAction = async (ctx: Context) => {
     if (!ctx.from) return;
+
+    try { await ctx.answerCbQuery(); } catch(e){}
+    try { await ctx.editMessageReplyMarkup(undefined); } catch(e){}
+
     const db = admin.firestore();
     const tgId = ctx.from.id.toString();
 
